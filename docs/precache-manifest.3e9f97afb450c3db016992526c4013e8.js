@@ -8,11 +8,11 @@ self.__precacheManifest = [
     "url": "/reddit-trends/js/chunk-vendors.4920c186.js"
   },
   {
-    "revision": "2681b6784dcc9ae28c39",
-    "url": "/reddit-trends/js/app.f8fa7a9e.js"
+    "revision": "5dd9d7d3dac482e874f9",
+    "url": "/reddit-trends/js/app.6f857a8e.js"
   },
   {
-    "revision": "93b35dbd0b8a09ad5395d996ed621edb",
+    "revision": "b48f632a3418e9e6a84cce00f14f0db3",
     "url": "/reddit-trends/index.html"
   },
   {
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/reddit-trends/img/reddit-icon.b90ba466.svg"
   },
   {
-    "revision": "2681b6784dcc9ae28c39",
-    "url": "/reddit-trends/css/app.b1ed08c0.css"
+    "revision": "5dd9d7d3dac482e874f9",
+    "url": "/reddit-trends/css/app.7a3e8d10.css"
   }
 ];

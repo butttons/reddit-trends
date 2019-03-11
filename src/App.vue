@@ -41,9 +41,9 @@
     name: 'app',
     data() {
       return {
-        subreddit: 'BattlefieldV',
+        subreddit: 'videos',
         sortType: 'new',
-        maxPosts: 0,
+        maxPosts: 100,
       };
     },
     computed: {
