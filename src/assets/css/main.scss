@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Sans|Montserrat');
+@import './pallete.scss';
+body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background-color: $color2;
+    color: $color4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+}
+.ff-m {
+    font-family: 'Montserrat', sans-serif;
+}
+.reddit-color {
+    color: $color1;
+}
+.bg-reddit-color {
+    background-color: $color1;
+}
+input[type='text'],
+input[type='number'] {
+    transition-property: background-color;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in;
+}
+input[type='text']:focus,
+input[type='number']:focus {
+    background-color: #fff;
+}

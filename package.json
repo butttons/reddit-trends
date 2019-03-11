@@ -1,23 +1,30 @@
 {
-  "name": "reddit-trends",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
-  },
-  "dependencies": {
-    "register-service-worker": "^1.6.2",
-    "vue": "^2.6.6",
-    "vuex": "^3.0.1"
-  },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.5.0",
-    "@vue/cli-plugin-pwa": "^3.5.0",
-    "@vue/cli-plugin-typescript": "^3.5.0",
-    "@vue/cli-service": "^3.5.0",
-    "typescript": "^3.2.1",
-    "vue-template-compiler": "^2.5.21"
-  }
+    "name": "reddit-trends",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "vue-cli-service serve",
+        "build": "NODE_ENV=production vue-cli-service build --dest docs",
+        "lint": "vue-cli-service lint"
+    },
+    "dependencies": {
+        "chart.js": "^2.7.3",
+        "moment": "^2.24.0",
+        "register-service-worker": "^1.6.2",
+        "vue": "^2.6.6",
+        "vuex": "^3.0.1"
+    },
+    "devDependencies": {
+        "@types/chart.js": "^2.7.46",
+        "@vue/cli-plugin-babel": "^3.5.0",
+        "@vue/cli-plugin-pwa": "^3.5.0",
+        "@vue/cli-plugin-typescript": "^3.5.0",
+        "@vue/cli-service": "^3.5.0",
+        "node-sass": "^4.11.0",
+        "pug": "^2.0.3",
+        "pug-plain-loader": "^1.0.0",
+        "sass-loader": "^7.1.0",
+        "typescript": "^3.2.1",
+        "vue-template-compiler": "^2.5.21"
+    }
 }
