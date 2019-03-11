@@ -24,7 +24,7 @@
           span.ml2.w-100.pa3.ba.b--silver.moon-gray.br2
             | Total posts: 
             span.f4 {{ totalCount }}
-      .pa2.flex.flex-column-ns
+      .pa2.flex.flex-column.flex-row-ns
         chart-score-counts
         chart-post-count
         chart-gild-counts

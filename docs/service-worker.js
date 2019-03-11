@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/reddit-trends/precache-manifest.3e9f97afb450c3db016992526c4013e8.js"
+  "/reddit-trends/precache-manifest.89cda7e73a6aa6465edcf786ea1cbcfa.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "reddit-trends"});
