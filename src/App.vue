@@ -60,28 +60,6 @@
   import { SubredditSorts } from '@/utils/@types-reddit';
   import { ComputedClass } from '*.vue';
   import moment from 'moment-timezone';
-
-  interface AppData extends DataViewConstructor {
-    subreddit: string;
-    sortType: SubredditSorts;
-    maxPosts: number;
-    selectedTimezone: string;
-  }
-  interface AppMethods extends MethodDecorator {
-    clearData: () => void;
-    setStatus: (payload: { status: boolean }) => void;
-    buttonAction: () => void;
-    startFetch: () => Promise<void>;
-  }
-  interface AppComputed extends Computed {
-    started: boolean;
-    totalCount: number;
-    oldestPost: string;
-    timezones: string[];
-    buttonStyleSubmit: ComputedClass;
-    buttonStyleClear: ComputedClass;
-    buttonLabel: string;
-  }
   export default Vue.extend({
     name: 'app',
     data() {
