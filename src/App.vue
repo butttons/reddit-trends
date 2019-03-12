@@ -1,9 +1,11 @@
 <template lang="pug">
   main
-    nav.bg-dark-gray
+    nav.bg-dark-gray.flex.items-center.justify-between
       div.ff-m.f3.pa3.flex.items-center
         img.logo--icon(src='@/assets/img/reddit-icon.svg')
         span.pl2 Reddit Trends
+      a(href='https://github.com/butttons/reddit-trends' target='_blank') 
+        img.logo--icon.mr3(src='@/assets/img/github-mark.png')
     section.ph2
       .pa2.f5.br2.ba.mv2.b--silver.moon-gray Type in a subreddit name and press start
       form(@submit.prevent='startFetch')
