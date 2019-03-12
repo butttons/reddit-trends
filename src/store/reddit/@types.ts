@@ -1,4 +1,4 @@
-import { ParsedPost, ParsedGildings } from '@/utils/reddit';
+import { ParsedPost } from '@/utils/@types-reddit';
 
 export interface RedditState {
     posts: ParsedPost[];
@@ -16,13 +16,17 @@ export enum Actions {
 }
 export enum Getters {
     TOTAL_COUNT = 'totalCount',
-    SCORE_HOUR_GRID = 'scoreHourGrid',
+    KEY_HOUR_GRID = 'keyHourGrid',
     POST_COUNT = 'postCount',
     SCORE_TOTAL = 'scoreTotal',
     SCORE_MEDIAN = 'scoreMedian',
     SCORE_MEAN = 'scoreMean',
     SCORE_RANGE = 'scoreRange',
     GILD_COUNTS = 'gildCounts',
+    COMMENT_TOTAL = 'commentTotal',
+    COMMENT_MEAN = 'commentMean',
+    COMMENT_SCORE_RATIO = 'commentScoreRatio',
+    OLDEST_POST = 'oldestPost',
 }
 export interface ChartGilding {
     [key: string]: number[];
