@@ -1,6 +1,6 @@
 # Reddit Trends
 
-[Available here](https://butttons.github.io/reddit-trends/).
+[Available here](https://reddit-trends.firebaseapp.com/).
 Get an overview of an activity on a subreddit.
 
 ### How things are calculated -
@@ -26,7 +26,7 @@ npm install
 ### Compiles and hot-reloads for development
 
 ```
-npm run eev
+npm run dev
 ```
 
 ### Compiles and minifies for production
