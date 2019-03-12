@@ -1,61 +1,37 @@
 import store from '@/store';
+import {
+    SubredditData,
+    SubredditSorts,
+    ParseDate,
+    ParsedDate,
+    ParseGildings,
+    Gildings,
+    ParsedGildings,
+    ParsedPost,
+    PostTransform,
+    FetchSubreddit,
+    FetchSubredditResponse,
+} from './@types-reddit';
 
-interface Gildings {
-    gid_1: number;
-    gid_2: number;
-    gid_3: number;
-}
-export const enum SubredditSorts {
-    HOT = 'hot',
-    NEW = 'new',
-    CONTROVERSIAL = 'controversial',
-    TOP = 'top',
-    RISING = 'rising',
-}
-interface SubredditData {
-    subreddit: string;
-    type?: SubredditSorts;
-    after?: boolean | string;
-}
 const apiUrl = ({ subreddit, type = SubredditSorts.NEW, after = false }: SubredditData) => {
     const url = new URL('https://www.reddit.com');
     url.pathname = `/r/${subreddit}/${type}/.json`;
+    const searchParams = new URLSearchParams('limit=100');
     if (after !== false) {
-        url.search = `after=${after}`;
+        searchParams.set('after', after as string);
     }
+    url.search = searchParams.toString();
     return url.toString();
 };
-interface ParsedDate {
-    hour: number;
-    time: number;
-}
-type ParseDate = (date: number) => ParsedDate;
 const parseDate: ParseDate = (date: number): ParsedDate => ({
     hour: new Date(date * 1000).getUTCHours(),
     time: date,
 });
-export interface ParsedGildings {
-    silver: number;
-    gold: number;
-    platinum: number;
-}
-type ParseGildings = (Gilding: Gildings) => ParsedGildings;
 const parseGildings: ParseGildings = (Gilding: Gildings): ParsedGildings => ({
     silver: Gilding.gid_1,
     gold: Gilding.gid_2,
     platinum: Gilding.gid_3,
 });
-interface PostTransform {
-    key: string;
-    transform: boolean | ParseDate | ParseGildings;
-}
-export interface ParsedPost {
-    created_utc: ParsedDate;
-    gildings: ParsedGildings;
-    num_comments: number;
-    num_crossposts: number;
-    score: number;
-}
 const parsePosts = (response: any): ParsedPost[] => {
     const keys: PostTransform[] = [
         { key: 'name', transform: false },
@@ -75,7 +51,7 @@ const parsePosts = (response: any): ParsedPost[] => {
         }, {});
     });
 };
-export const fetchSubReddit = async (fetchConfig: SubredditData) => {
+export const fetchSubReddit = async (fetchConfig: SubredditData): Promise<FetchSubreddit> => {
     const url = apiUrl(fetchConfig);
     const response = await fetch(url)
         .then((res) => res.json())
@@ -83,25 +59,28 @@ export const fetchSubReddit = async (fetchConfig: SubredditData) => {
             return false;
         });
     if (response !== false) {
+        const posts = parsePosts(response);
+        store.dispatch('reddit/addPosts', { posts });
         return {
-            nodes: parsePosts(response),
-            after: response.data.after !== undefined ? response.data.after : false,
+            nodes: posts,
+            after: response.data.after !== null ? response.data.after : false,
         };
     }
     return false;
 };
 export const streamPosts = async (fetchConfig: SubredditData, limit: number) => {
+    const hasToStop = !store.state.reddit.started;
+    if (hasToStop) {
+        store.dispatch('reddit/setStatus', { status: false });
+        return false;
+    }
     const posts = await fetchSubReddit(fetchConfig);
     const counter = store.getters['reddit/totalCount'];
-    if (counter < limit && store.state.reddit.started) {
-        if (posts === false) {
-            return;
-        }
+    if (counter < limit && posts !== false && (posts as FetchSubredditResponse).after !== false) {
         const newConfig = {
             ...fetchConfig,
-            after: posts.after,
+            after: (posts as FetchSubredditResponse).after,
         };
-        store.dispatch('reddit/addPosts', { posts: posts.nodes });
         await streamPosts(newConfig, limit);
     } else {
         store.dispatch('reddit/setStatus', { status: false });
