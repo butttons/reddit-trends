@@ -1,6 +1,6 @@
 <template lang="pug">
   .w-100.w-50-l
-    canvas(id='chartScoreCounts' width='600' height='400')
+    canvas(id='chartCommentCounts' width='600' height='400')
 </template>
 <script lang="ts">
   import Vue from 'vue';
@@ -9,7 +9,6 @@
     chartLabels,
     chartOptions,
     chartColors,
-    chartDataset,
     chartConfig,
   } from '@/utils/charts';
   import { mapGetters } from 'vuex';
@@ -24,34 +23,29 @@
     },
     computed: {
       ...mapGetters('reddit', [
-        Getters.SCORE_TOTAL,
-        Getters.SCORE_MEAN,
-        Getters.SCORE_MEDIAN,
-        Getters.SCORE_RANGE,
+        Getters.COMMENT_TOTAL,
+        Getters.COMMENT_MEAN,
+        Getters.COMMENT_SCORE_RATIO,
       ]),
     },
     watch: {
-      [Getters.SCORE_TOTAL](val) {
+      [Getters.COMMENT_TOTAL](val) {
         this.chart!.data!.datasets![0].data = val;
         this.chart.update();
       },
-      [Getters.SCORE_MEAN](val) {
+      [Getters.COMMENT_MEAN](val) {
         this.chart!.data!.datasets![1].data = val;
         this.chart.update();
       },
-      [Getters.SCORE_MEDIAN](val) {
+      [Getters.COMMENT_SCORE_RATIO](val) {
         this.chart!.data!.datasets![2].data = val;
-        this.chart.update();
-      },
-      [Getters.SCORE_RANGE](val) {
-        this.chart!.data!.datasets![3].data = val;
         this.chart.update();
       },
     },
     mounted() {
       this.chart = new Chart(
-        'chartScoreCounts',
-        chartConfig(['Score total', 'Score mean', 'Score median', 'Score range']),
+        'chartCommentCounts',
+        chartConfig(['Comments total', 'Comments mean', 'Score:comments ratio']),
       );
     },
   });

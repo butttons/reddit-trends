@@ -1,11 +1,11 @@
 <template lang="pug">
-  div
+  .w-100.w-50-l
     canvas(id='chartPostCount' width='600' height='400')
 </template>
 <script lang="ts">
   import Vue from 'vue';
   import Chart from 'chart.js';
-  import { chartLabels, chartOptions } from '@/utils/charts';
+  import { chartConfig } from '@/utils/charts';
   import { mapGetters } from 'vuex';
   import { Getters } from '@/store/reddit/@types';
 
@@ -26,23 +26,7 @@
       },
     },
     mounted() {
-      const myChart = new Chart('chartPostCount', {
-        type: 'line',
-        data: {
-          labels: chartLabels(),
-          datasets: [
-            {
-              label: '# of posts',
-              data: [],
-              backgroundColor: 'rgba(255, 99, 132, 0.2)',
-              borderColor: 'rgba(255,99,132,1)',
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: chartOptions,
-      });
-      this.chart = myChart;
+      this.chart = new Chart('chartPostCount', chartConfig(['Post count']));
     },
   });
 </script>
