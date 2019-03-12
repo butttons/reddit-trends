@@ -19,22 +19,32 @@
             option(value='top') /top
             option(value='controversial') /controversial
             option(value='rising') /rising  
-          button.f5.pa3.outline-0.bn.ttu.pointer.white.o-80.glow(type='submit' :disabled='started' :class='buttonStyleSubmit') Start
+          button.f5.pa3.outline-0.bn.ttu.pointer.white.o-80(type='submit' :disabled='started' :class='buttonStyleSubmit') Start
           button.f5.pa3.outline-0.bn.br2.ttu.br--right.pointer.white.o-80.glow(@click='buttonAction' type='button' :class='buttonStyleClear') {{ buttonLabel }}
-        .f6.pb1.silver.mt2.pb1 Limit of posts
         .flex.pb2
-          input.w4.f4.pa3.outline-0.br2.bn.bg-moon-gray(type='number' placeholder='Max posts' v-model='maxPosts' required)
-          .ml2.w-100.pa3.ba.b--silver.moon-gray.br2.flex.justify-start
+          div
             div
-              span.f6.pb1.silver.ma2 Total posts
-              span.bg-silver.black-70.br1.f5.pv1.ph2  {{ totalCount }}
+              .f6.pb1.silver.mt2.pb1 Limit of posts
+              .flex
+                a.dn(ref='download')
+                input.w4.f5.pa2.outline-0.br2.bn.bg-moon-gray(type='number' placeholder='Max posts' v-model='maxPosts' required)
+                button.f5.pv2.ph3.outline-0.bn.br2.ttu.pointer.white.o-80.ml2(type='button' @click='exportAction' :disabled='!totalCount && !started' :class='buttonStyleExport') Export
             div
-              span.f6.pb1.silver.ma2 Oldest post
-              span.bg-silver.black-70.br1.f5.pv1.ph2 {{ oldestPost }}
-      .ph2.flex.flex-column.flex-row-ns
+              .f6.pb1.silver.mt2.pb1 Timezone
+              select.w3.bg-moon-gray.outline-0.bn.br2.w-100.pa2(v-model='selectedTimezone')
+                option(v-for='tz, index in timezones' :value='tz' :key='index') {{ tz }}
+          .w-100.pl2.pt2
+            table.table.pa3.ba.b--silver.moon-gray.br2.f6.w-100.h-100
+              tr
+                td.w-40 Total posts
+                td.bg-light-silver.dark-gray.br1.pv1.ph2 {{ totalCount }}
+              tr
+                td.w-40 Oldest post
+                td.bg-light-silver.dark-gray.br1.pv1.ph2 {{ oldestPost }}
+      .ph2.flex.flex-column.flex-row-l
         chart-score-counts
         chart-post-count
-      .ph2.flex.flex-column.flex-row-ns
+      .ph2.flex.flex-column.flex-row-l
         chart-comment-counts
         chart-gild-counts
 </template>
@@ -45,10 +55,33 @@
   import ChartGildCounts from '@/components/charts/GildCounts.vue';
   import ChartCommentCounts from '@/components/charts/CommentCounts.vue';
   import { fetchSubReddit, streamPosts } from '@/utils/reddit.ts';
-  import { Actions, Getters } from '@/store/reddit/@types';
+  import { Actions, Getters, RedditState } from '@/store/reddit/@types';
   import { mapGetters, mapActions, mapState, Computed } from 'vuex';
   import { SubredditSorts } from '@/utils/@types-reddit';
   import { ComputedClass } from '*.vue';
+  import moment from 'moment-timezone';
+
+  interface AppData extends DataViewConstructor {
+    subreddit: string;
+    sortType: SubredditSorts;
+    maxPosts: number;
+    selectedTimezone: string;
+  }
+  interface AppMethods extends MethodDecorator {
+    clearData: () => void;
+    setStatus: (payload: { status: boolean }) => void;
+    buttonAction: () => void;
+    startFetch: () => Promise<void>;
+  }
+  interface AppComputed extends Computed {
+    started: boolean;
+    totalCount: number;
+    oldestPost: string;
+    timezones: string[];
+    buttonStyleSubmit: ComputedClass;
+    buttonStyleClear: ComputedClass;
+    buttonLabel: string;
+  }
   export default Vue.extend({
     name: 'app',
     data() {
@@ -56,17 +89,34 @@
         subreddit: 'videos',
         sortType: 'new',
         maxPosts: 100,
+        selectedTimezone: '',
       };
+    },
+    mounted() {
+      // @ts-ignore
+      this.clearData();
+      this.selectedTimezone = moment.tz.guess();
+      this.$store.dispatch('reddit/setTimezone', {
+        timezone: this.selectedTimezone,
+      });
+    },
+    watch: {
+      selectedTimezone(timezone: string) {
+        this.$store.dispatch('reddit/setTimezone', { timezone });
+      },
     },
     computed: {
       ...mapState('reddit', ['started']),
       ...mapGetters('reddit', [Getters.TOTAL_COUNT, Getters.OLDEST_POST]),
+      timezones(): string[] {
+        return moment.tz.names();
+      },
       buttonStyleSubmit(): ComputedClass {
         return {
           // @ts-ignore
           'bg-gray moon-gray': this.started,
           // @ts-ignore
-          'bg-reddit-color white': !this.started,
+          'bg-reddit-color white glow': !this.started,
         };
       },
       buttonStyleClear(): ComputedClass {
@@ -77,13 +127,38 @@
           'bg-reddit-color white': this.started,
         };
       },
+      exportAvailable(): boolean {
+        // @ts-ignore
+        return this.totalCount > 0 && !this.started;
+      },
+      buttonStyleExport(): ComputedClass {
+        return {
+          'bg-gray moon-gray': !this.exportAvailable,
+          'bg-green white glow': this.exportAvailable,
+        };
+      },
       buttonLabel(): string {
         // @ts-ignore
         return this.started ? 'Stop' : 'Clear';
       },
     },
     methods: {
-      ...mapActions('reddit', ['clearData', 'setStatus']),
+      ...mapActions('reddit', ['clearData', 'setStatus', 'exportData']),
+      exportAction() {
+        if (this.exportAvailable) {
+          const fileName = `export-${this.subreddit}_${this.sortType}.json`;
+          const anchor = this.$refs.download as HTMLElement;
+          const raw = this.$store.state.reddit.raw;
+          const blob = new Blob([JSON.stringify(raw, null, 2)], {
+            type: 'application/json',
+          });
+          const href = URL.createObjectURL(blob);
+          anchor.setAttribute('href', href);
+          anchor.setAttribute('download', fileName);
+          anchor.click();
+          URL.revokeObjectURL(anchor.getAttribute('href') as string);
+        }
+      },
       buttonAction() {
         // @ts-ignore
         const started: boolean = this.started;
@@ -96,9 +171,8 @@
         }
       },
       async startFetch() {
-        const name = this.subreddit;
         const fetchConfig = {
-          subreddit: name,
+          subreddit: this.subreddit,
           type: this.sortType as SubredditSorts,
         };
         // @ts-ignore

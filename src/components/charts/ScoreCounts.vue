@@ -5,18 +5,13 @@
 <script lang="ts">
   import Vue from 'vue';
   import Chart from 'chart.js';
-  import {
-    chartLabels,
-    chartOptions,
-    chartColors,
-    chartDataset,
-    chartConfig,
-  } from '@/utils/charts';
+  import { chartConfig, chartMixin } from '@/utils/charts';
   import { mapGetters } from 'vuex';
   import { Getters } from '@/store/reddit/@types';
 
   export default Vue.extend({
     name: 'chart-score-counts',
+    mixins: [chartMixin],
     data() {
       return {
         chart: {} as Chart,
@@ -32,20 +27,16 @@
     },
     watch: {
       [Getters.SCORE_TOTAL](val) {
-        this.chart!.data!.datasets![0].data = val;
-        this.chart.update();
+        this.updateChart(this.chart, 0, val);
       },
       [Getters.SCORE_MEAN](val) {
-        this.chart!.data!.datasets![1].data = val;
-        this.chart.update();
+        this.updateChart(this.chart, 1, val);
       },
       [Getters.SCORE_MEDIAN](val) {
-        this.chart!.data!.datasets![2].data = val;
-        this.chart.update();
+        this.updateChart(this.chart, 2, val);
       },
       [Getters.SCORE_RANGE](val) {
-        this.chart!.data!.datasets![3].data = val;
-        this.chart.update();
+        this.updateChart(this.chart, 3, val);
       },
     },
     mounted() {

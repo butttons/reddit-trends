@@ -5,12 +5,13 @@
 <script lang="ts">
   import Vue from 'vue';
   import Chart from 'chart.js';
-  import { chartConfig } from '@/utils/charts';
+  import { chartConfig, chartMixin } from '@/utils/charts';
   import { mapGetters } from 'vuex';
   import { Getters } from '@/store/reddit/@types';
 
   export default Vue.extend({
     name: 'chart-post-count',
+    mixins: [chartMixin],
     data() {
       return {
         chart: {} as Chart,
@@ -21,8 +22,7 @@
     },
     watch: {
       [Getters.POST_COUNT](val) {
-        this.chart!.data!.datasets![0].data = val;
-        this.chart.update();
+        this.updateChart(this.chart, 0, val);
       },
     },
     mounted() {

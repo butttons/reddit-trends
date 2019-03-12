@@ -17,7 +17,7 @@ export interface SubredditData {
 }
 
 export interface ParsedDate {
-    hour: number;
+    hour?: number;
     time: number;
 }
 export type ParseDate = (date: number) => ParsedDate;
@@ -34,7 +34,7 @@ export interface PostTransform {
     transform: boolean | ParseDate | ParseGildings;
 }
 export interface ParsedPost {
-    created_utc: ParsedDate;
+    created_utc: number;
     gildings: ParsedGildings;
     num_comments: number;
     num_crossposts: number;
@@ -45,3 +45,4 @@ export interface FetchSubredditResponse {
     after: boolean | string;
 }
 export type FetchSubreddit = boolean | FetchSubredditResponse;
+export type ParseFn = (payload: any) => void;

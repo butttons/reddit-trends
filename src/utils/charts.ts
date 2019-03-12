@@ -1,3 +1,5 @@
+import Chart from 'chart.js';
+
 export const range = (n: number) => Array.from({ length: n }, (_, k) => k + 1);
 export const chartLabels = () => {
     const ams = range(11).map((n) => `${n} AM`);
@@ -77,3 +79,12 @@ export const chartConfig = (labels: string[], gildings: boolean = false) => ({
     data: chartDataset(labels, gildings),
     options: chartOptions,
 });
+
+export const chartMixin = {
+    methods: {
+        updateChart(chart: Chart, index: number, dataset: any) {
+            chart!.data!.datasets![index].data = dataset;
+            chart.update();
+        },
+    },
+};

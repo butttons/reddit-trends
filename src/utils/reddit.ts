@@ -11,9 +11,14 @@ import {
     PostTransform,
     FetchSubreddit,
     FetchSubredditResponse,
+    ParseFn,
 } from './@types-reddit';
 
-const apiUrl = ({ subreddit, type = SubredditSorts.NEW, after = false }: SubredditData) => {
+const apiUrl = ({
+    subreddit,
+    type = SubredditSorts.NEW,
+    after = false,
+}: SubredditData) => {
     const url = new URL('https://www.reddit.com');
     url.pathname = `/r/${subreddit}/${type}/.json`;
     const searchParams = new URLSearchParams('limit=100');
@@ -23,10 +28,6 @@ const apiUrl = ({ subreddit, type = SubredditSorts.NEW, after = false }: Subredd
     url.search = searchParams.toString();
     return url.toString();
 };
-const parseDate: ParseDate = (date: number): ParsedDate => ({
-    hour: new Date(date * 1000).getUTCHours(),
-    time: date,
-});
 const parseGildings: ParseGildings = (Gilding: Gildings): ParsedGildings => ({
     silver: Gilding.gid_1,
     gold: Gilding.gid_2,
@@ -35,7 +36,7 @@ const parseGildings: ParseGildings = (Gilding: Gildings): ParsedGildings => ({
 const parsePosts = (response: any): ParsedPost[] => {
     const keys: PostTransform[] = [
         { key: 'name', transform: false },
-        { key: 'created_utc', transform: parseDate },
+        { key: 'created_utc', transform: false },
         { key: 'gildings', transform: parseGildings },
         { key: 'score', transform: false },
         { key: 'num_comments', transform: false },
@@ -45,22 +46,28 @@ const parsePosts = (response: any): ParsedPost[] => {
     return children.map((node: any) => {
         const post = node.data;
         return keys.reduce((acc: any, cell) => {
-            // @ts-ignore
-            acc[cell.key] = cell.transform === false ? post[cell.key] : cell.transform(post[cell.key]);
+            acc[cell.key] =
+                cell.transform === false
+                    ? post[cell.key]
+                    : (cell.transform as ParseFn).call({}, post[cell.key]);
             return acc;
         }, {});
     });
 };
-export const fetchSubReddit = async (fetchConfig: SubredditData): Promise<FetchSubreddit> => {
+export const fetchSubReddit = async (
+    fetchConfig: SubredditData,
+): Promise<FetchSubreddit> => {
     const url = apiUrl(fetchConfig);
     const response = await fetch(url)
         .then((res) => res.json())
         .catch((e) => {
+            alert(e.message);
             return false;
         });
     if (response !== false) {
         const posts = parsePosts(response);
         store.dispatch('reddit/addPosts', { posts });
+        store.dispatch('reddit/addRawPosts', { posts: response.data.children });
         return {
             nodes: posts,
             after: response.data.after !== null ? response.data.after : false,
@@ -68,7 +75,10 @@ export const fetchSubReddit = async (fetchConfig: SubredditData): Promise<FetchS
     }
     return false;
 };
-export const streamPosts = async (fetchConfig: SubredditData, limit: number) => {
+export const streamPosts = async (
+    fetchConfig: SubredditData,
+    limit: number,
+) => {
     const hasToStop = !store.state.reddit.started;
     if (hasToStop) {
         store.dispatch('reddit/setStatus', { status: false });
@@ -76,7 +86,11 @@ export const streamPosts = async (fetchConfig: SubredditData, limit: number) => 
     }
     const posts = await fetchSubReddit(fetchConfig);
     const counter = store.getters['reddit/totalCount'];
-    if (counter < limit && posts !== false && (posts as FetchSubredditResponse).after !== false) {
+    if (
+        counter < limit &&
+        posts !== false &&
+        (posts as FetchSubredditResponse).after !== false
+    ) {
         const newConfig = {
             ...fetchConfig,
             after: (posts as FetchSubredditResponse).after,

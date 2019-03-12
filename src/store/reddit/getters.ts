@@ -1,4 +1,5 @@
 import { GetterTree } from 'vuex';
+import moment from 'moment-timezone';
 import { RootState } from './../@types';
 import { RedditState, Getters, ChartGilding } from './@types';
 import {
@@ -13,19 +14,25 @@ export const getters: GetterTree<RedditState, RootState> = {
         if (!state.posts.length) {
             return 'none';
         }
-        const dates = state.posts.map((post) => post.created_utc.time);
+        const dates = state.posts.map((post) => post.created_utc);
         const oldest = Math.min(...dates);
-        return new Date(oldest * 1000).toUTCString();
+        const timezone = state.timezone;
+        return moment(oldest * 1000)
+            .tz(timezone)
+            .format('D MMM YY, h:mm a');
     },
     [Getters.TOTAL_COUNT]: (state) => state.posts.length,
     [Getters.GILD_COUNTS]: (state) => {
+        const timezone = state.timezone;
         const dataset: ChartGilding = {
             silver: emptyData(),
             gold: emptyData(),
             platinum: emptyData(),
         };
         state.posts.forEach((post) => {
-            const hour = post.created_utc.hour;
+            const hour = moment(post.created_utc * 1000)
+                .tz(timezone)
+                .hour();
             dataset.silver[hour] += post.gildings.silver;
             dataset.gold[hour] += post.gildings.gold;
             dataset.platinum[hour] += post.gildings.platinum;
@@ -34,7 +41,9 @@ export const getters: GetterTree<RedditState, RootState> = {
     },
     [Getters.KEY_HOUR_GRID]: (state) => (key: string = 'score') =>
         state.posts.reduce((acc: any, post: any) => {
-            const hour = post.created_utc.hour;
+            const hour = moment(post.created_utc * 1000)
+                .tz(state.timezone)
+                .hour();
             if (acc[hour] === undefined) {
                 acc[hour] = [];
             }
